@@ -14,7 +14,9 @@ const CONFIG = {
   calendarUrl: 'https://6lock.com/demo',
   websiteUrl: 'https://6lock.com',
   benchmarkLow: 35,
-  benchmarkHigh: 55
+  benchmarkHigh: 55,
+  // Set this to your Google Apps Script web app URL after deploying (see _docs/google-sheets-setup.md)
+  sheetsWebhookUrl: ''
 };
 
 // ===== QUESTIONS DATA =====
@@ -186,6 +188,8 @@ const state = {
   pillarScores: {},
   totalScore: 0,
   respondent: null,
+  sessionId: null,
+  source: null,
   phase: 'landing'
 };
 
@@ -319,6 +323,9 @@ function recalculateScores() {
 
 // ===== ADVANCE QUESTION =====
 function advanceQuestion() {
+  // Save partial answers to Sheets (fire-and-forget)
+  savePartialToSheets();
+
   const next = state.currentQuestion + 1;
   if (next < QUESTIONS.length) {
     renderQuestion(next);
@@ -383,6 +390,19 @@ function submitForm(e) {
 
   // Send email notification
   sendNotificationEmail();
+
+  // Send to Google Sheets
+  submitToSheets();
+
+  // Mark partial session as completed
+  if (CONFIG.sheetsWebhookUrl && state.sessionId) {
+    fetch(CONFIG.sheetsWebhookUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: state.sessionId, isPartial: false })
+    }).catch(err => console.error('Partial completion marker failed:', err));
+  }
 
   // Reveal results
   showResults();
@@ -596,6 +616,72 @@ function animatePillarBars() {
   });
 }
 
+// ===== GOOGLE SHEETS - PARTIAL SAVE (fire-and-forget on each "Next") =====
+function savePartialToSheets() {
+  if (!CONFIG.sheetsWebhookUrl || !state.sessionId) return;
+
+  const grade = getGrade(state.totalScore);
+  const payload = {
+    sessionId: state.sessionId,
+    timestamp: new Date().toISOString(),
+    isPartial: true,
+    source: state.source || '',
+    score: state.totalScore,
+    grade: grade.letter + ' - ' + grade.label
+  };
+
+  QUESTIONS.forEach((q, i) => {
+    const a = state.answers[i];
+    payload['q' + q.id] = a ? a.selectedText : '';
+  });
+
+  fetch(CONFIG.sheetsWebhookUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(err => console.error('Partial save failed:', err));
+}
+
+// ===== GOOGLE SHEETS - COMPLETE SUBMISSION =====
+function submitToSheets() {
+  if (!CONFIG.sheetsWebhookUrl) return;
+
+  const grade = getGrade(state.totalScore);
+  const pillarMaxes = getPillarMaxes();
+  const pillarSummary = Object.entries(pillarMaxes).map(([key, max]) => {
+    const score = state.pillarScores[key] || 0;
+    return PILLAR_RECOMMENDATIONS[key].name + ': ' + score + '/' + max;
+  }).join('; ');
+
+  const row = {
+    timestamp: new Date().toISOString(),
+    name: state.respondent.name,
+    email: state.respondent.email,
+    company: state.respondent.company || '',
+    role: state.respondent.role || '',
+    score: state.totalScore,
+    grade: grade.letter + ' - ' + grade.label,
+    pillarScores: pillarSummary,
+    mailingList: state.respondent.mailingList ? 'Yes' : 'No',
+    source: state.source || ''
+  };
+
+  QUESTIONS.forEach((q, i) => {
+    const a = state.answers[i];
+    row['q' + q.id] = a ? a.selectedText : '';
+  });
+
+  fetch(CONFIG.sheetsWebhookUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(row)
+  })
+    .then(() => console.log('Sheets: submitted'))
+    .catch(err => console.error('Sheets submit failed:', err));
+}
+
 // ===== HELPERS =====
 function getGrade(score) {
   return GRADES.find(g => score >= g.min) || GRADES[GRADES.length - 1];
@@ -628,8 +714,15 @@ function getRecommendations() {
 
 // ===== EVENT LISTENERS =====
 document.addEventListener('DOMContentLoaded', () => {
+  // Capture source from URL (e.g., ?src=mailer for QR code prospects)
+  const urlParams = new URLSearchParams(window.location.search);
+  state.source = urlParams.get('src') || '';
+
   // Start button
   $('#btn-start').addEventListener('click', () => {
+    state.sessionId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'sess-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
     renderQuestion(0);
   });
 
