@@ -15,8 +15,8 @@ const CONFIG = {
   websiteUrl: 'https://6lock.com',
   benchmarkLow: 35,
   benchmarkHigh: 55,
-  // Set this to your Google Apps Script web app URL after deploying (see _docs/google-sheets-setup.md)
-  sheetsWebhookUrl: '',
+  // Google Apps Script web app URL (deployed via crossvine.ai account)
+  sheetsWebhookUrl: 'https://script.google.com/a/macros/crossvine.ai/s/AKfycbzH_00MFfkaimZ7vcvP8N6c2iGUOk4fkq0yV_aDi4rhaKdZ6bUYl21oMhPtAwJH1_oJ/exec',
   // Shared secret - must match VALID_TOKEN in google-apps-script.js
   webhookToken: '6lock-secidx-2026-pv8w3n'
 };
