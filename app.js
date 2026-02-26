@@ -16,7 +16,9 @@ const CONFIG = {
   benchmarkLow: 35,
   benchmarkHigh: 55,
   // Set this to your Google Apps Script web app URL after deploying (see _docs/google-sheets-setup.md)
-  sheetsWebhookUrl: ''
+  sheetsWebhookUrl: '',
+  // Shared secret - must match VALID_TOKEN in google-apps-script.js
+  webhookToken: '6lock-secidx-2026-pv8w3n'
 };
 
 // ===== QUESTIONS DATA =====
@@ -359,6 +361,9 @@ function showGateScreen() {
 function submitForm(e) {
   e.preventDefault();
 
+  // Honeypot check - bots fill hidden fields, humans don't
+  if ($('#field-website').value) return;
+
   const name = $('#field-name').value.trim();
   const email = $('#field-email').value.trim();
   const company = $('#field-company').value.trim();
@@ -378,8 +383,8 @@ function submitForm(e) {
     }
   });
 
-  // Basic email validation
-  if (email && !email.includes('@')) {
+  // Email validation
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
     $('#field-email').classList.add('error');
     valid = false;
   }
@@ -400,7 +405,7 @@ function submitForm(e) {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: state.sessionId, isPartial: false })
+      body: JSON.stringify({ token: CONFIG.webhookToken, sessionId: state.sessionId, isPartial: false })
     }).catch(err => console.error('Partial completion marker failed:', err));
   }
 
@@ -622,6 +627,7 @@ function savePartialToSheets() {
 
   const grade = getGrade(state.totalScore);
   const payload = {
+    token: CONFIG.webhookToken,
     sessionId: state.sessionId,
     timestamp: new Date().toISOString(),
     isPartial: true,
@@ -655,6 +661,7 @@ function submitToSheets() {
   }).join('; ');
 
   const row = {
+    token: CONFIG.webhookToken,
     timestamp: new Date().toISOString(),
     name: state.respondent.name,
     email: state.respondent.email,
