@@ -16,7 +16,7 @@ const CONFIG = {
   benchmarkLow: 35,
   benchmarkHigh: 55,
   // Google Apps Script web app URL (deployed via crossvine.ai account)
-  sheetsWebhookUrl: 'https://script.google.com/a/macros/crossvine.ai/s/AKfycbwE0OX_NoPFaucj3oOPb26K3bLO4A6coz7hNvq2R-vfsyNocqgoLVWIimLIQG3B1yE/exec',
+  sheetsWebhookUrl: 'https://script.google.com/macros/s/AKfycbzLSbOhtS2FO0h2Qz0h5BZgLlFLT-CtSumSYta7g1GiDedA-h9XcU7p6toZ3ICkJquF/exec',
   // Shared secret - must match VALID_TOKEN in google-apps-script.js
   webhookToken: '6lock-secidx-2026-pv8w3n'
 };
