@@ -11,7 +11,7 @@ const CONFIG = {
     templateId: 'YOUR_TEMPLATE_ID',
     publicKey: 'YOUR_PUBLIC_KEY'
   },
-  calendarUrl: 'https://6lock.com/demo',
+  calendarUrl: 'https://www.6lock.com/contact',
   websiteUrl: 'https://6lock.com',
   benchmarkLow: 35,
   benchmarkHigh: 55,
@@ -580,7 +580,7 @@ function buildResultsHTML() {
   // CTAs
   html += `
     <div class="results__ctas">
-      <a href="${CONFIG.calendarUrl}" target="_blank" rel="noopener" class="btn btn--primary">Schedule 15 Minutes to Discuss Your Results</a>
+      <a href="${CONFIG.calendarUrl}" target="_blank" rel="noopener" class="btn btn--primary">Contact Us</a>
       <a href="${CONFIG.websiteUrl}" target="_blank" rel="noopener" class="btn btn--secondary">Learn More at 6lock.com</a>
     </div>
   `;
