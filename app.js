@@ -112,7 +112,7 @@ const QUESTIONS = [
       { text: 'It varies - sometimes email, sometimes through the fund admin', points: 1 },
       { text: 'We rely on instructions already on file (which may not be current)', points: 0 }
     ],
-    tooltip: 'Capital events are the highest-risk moment in PE fund operations. Attackers infiltrate systems and wait months for the chaotic last-minute event where nobody double-checks.'
+    tooltip: 'Capital events are the highest-risk moment in PE fund operations. Attackers infiltrate systems and wait months for opportunities during chaotic, last-minute transaction preparations.'
   },
   {
     id: 7,
@@ -162,7 +162,7 @@ const PILLAR_RECOMMENDATIONS = {
   },
   capitalEvent: {
     name: 'Capital Event Security',
-    advice: 'Capital calls and distributions are your highest-risk moments, and attackers know it. They wait months for the urgent, last-minute event where wire instructions move fast and nobody double-checks. Moving payment instructions off email and PDFs into a secure, immutable channel eliminates the most exploited attack vector in PE.'
+    advice: 'Capital calls and distributions are your highest-risk moments, and attackers know it. They wait months for the urgent, last-minute event where wire instructions move fast. Moving payment instructions off email and PDFs into a secure, immutable channel eliminates the most exploited attack vector in PE.'
   },
   communication: {
     name: 'Communication Security',
